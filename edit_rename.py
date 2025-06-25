@@ -7,9 +7,11 @@ import time
 from datetime import datetime
 from pathlib import Path
 
+import yaml
 from exif import Image
 
 
+# Preliminary rename of the edit files
 def preliminary_name(input_dir):
     image_count = 0
 
@@ -29,6 +31,7 @@ def preliminary_name(input_dir):
         os.rename(image_file, new_image_path)
 
 
+# Proper rename of the edit files
 def proper_rename(input_dir):
     image_count = 0
     same_image_count = 0
@@ -164,21 +167,36 @@ def proper_rename(input_dir):
             image_count += 1
 
 
-def main():
-    script_path = Path(__file__).resolve()
-    project_dir = script_path.parent
+# Function to find the project directory
+# Uses the config file as marker
+def find_project_root(script_path, marker):
+    current_path = script_path
+    while not (current_path / marker).exists():
+        # If block checks for parent of current path
+        # If it cannot go up any further, base directory is reached
+        if current_path.parent == current_path:
+            raise FileNotFoundError(f"Could not find '{marker}' in any parent directories.")
 
-    # Change working directory to project directory
-    os.chdir(project_dir)
+        current_path = current_path.parent
+
+    # If it exits the while loop, marker was found
+    return current_path
+
+
+def main():
+    config_file_name = 'Lumiere_config.yaml'
+    script_path = Path(__file__).resolve()
+    project_dir = find_project_root(script_path, config_file_name)
     sys.path.append(str(project_dir))
 
-    with open("Resources_Path.txt", "r") as read_text:
-        lines = read_text.readlines()
+    config_file_path = project_dir / config_file_name
 
-    resources_dir = Path(lines[0].replace('"', ''))
+    with open(config_file_path, "r") as open_config:
+        config_content = yaml.safe_load(open_config)
+
+    resources_dir = Path(config_content['resources_dir'])
 
     # Initializes the folders if they are not present
-
     input_dir = resources_dir / "Input"
     if not input_dir.exists():
         os.mkdir(input_dir)

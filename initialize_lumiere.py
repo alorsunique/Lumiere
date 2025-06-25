@@ -1,23 +1,19 @@
 import os
 from pathlib import Path
 
-resources_dir_text = "Resources_Path.txt"
+import yaml
 
-# Creates Resources_Path.txt
-with open(resources_dir_text, 'a') as writer:
-    pass
+if __name__ == "__main__":
+    config_file_name = 'Lumiere_config.yaml'
+    config_file_path = config_file_name
 
-# Reads Resources_Path.txt
-with open("Resources_Path.txt", "r") as read_text:
-    lines = read_text.readlines()
+    with open(config_file_path, "r") as open_config:
+        config_content = yaml.safe_load(open_config)
 
-if lines:
-    resources_dir = Path(lines[0].replace('"', ''))
+    resources_dir = Path(config_content['resources_dir'])
+
     print(f"Resources Directory: {resources_dir}")
 
     # Creates Resources Directory
     if not resources_dir.exists():
         os.mkdir(resources_dir)
-
-else:
-    print("No directory")
